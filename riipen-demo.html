@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riipen AI Workflow — Team 22 Demo</title>
+<style>
+  :root {
+    --ink: #1a1a18;
+    --ink-2: #4a4a46;
+    --ink-3: #8a8a84;
+    --paper: #fafaf7;
+    --surface: #f2f2ee;
+    --border: #e0e0d8;
+    --red: #c84b3a;
+    --red-bg: #fdf0ee;
+    --amber: #b36a10;
+    --amber-bg: #fdf5e8;
+    --green: #2d7a4f;
+    --green-bg: #edf7f2;
+    --blue: #2155a3;
+    --blue-bg: #eef3fb;
+    --purple: #5a3fa0;
+    --purple-bg: #f3f0fc;
+    --accent: #2155a3;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--ink);
+    color: #fff;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo-pill {
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+  .header h1 { font-size: 16px; font-weight: 500; color: #fff; }
+  .header-meta { font-size: 12px; color: #9a9a94; }
+
+  /* ── NAV TABS ── */
+  .tabs {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 0;
+    padding: 0 32px;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-2);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .15s, border-color .15s;
+    font-family: var(--font);
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── MAIN ── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 32px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── SECTION HEADINGS ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 12px;
+  }
+  h2 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  p { color: var(--ink-2); margin-bottom: 10px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 720px) { .card-grid { grid-template-columns: 1fr; } }
+
+  /* ── STAT TILES ── */
+  .stat-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat {
+    flex: 1;
+    min-width: 120px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+  }
+  .stat-num { font-size: 26px; font-weight: 600; line-height: 1; margin-bottom: 4px; }
+  .stat-label { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; }
+  .stat.red .stat-num { color: var(--red); }
+  .stat.amber .stat-num { color: var(--amber); }
+  .stat.green .stat-num { color: var(--green); }
+  .stat.blue .stat-num { color: var(--blue); }
+
+  /* ── RISK TAGS ── */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .tag.red { background: var(--red-bg); color: var(--red); }
+  .tag.amber { background: var(--amber-bg); color: var(--amber); }
+  .tag.green { background: var(--green-bg); color: var(--green); }
+  .tag.blue { background: var(--blue-bg); color: var(--blue); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ── RISK TABLE ── */
+  .risk-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .risk-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .risk-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .risk-table tr:last-child td { border-bottom: none; }
+  .risk-table tr:hover td { background: var(--surface); }
+  .team-name { font-weight: 600; color: var(--ink); }
+  .project-name { font-size: 12px; color: var(--ink-3); margin-top: 2px; max-width: 240px; }
+  .action-text { font-size: 12px; color: var(--ink-2); }
+
+  /* ── PROMPT DEMO ── */
+  .prompt-box {
+    background: #1a1a18;
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .prompt-box pre {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #d4d4cc;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .prompt-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #6a6a64;
+    margin-bottom: 10px;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #2e2e2a;
+    border: 1px solid #3e3e3a;
+    color: #9a9a94;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: background .15s, color .15s;
+  }
+  .copy-btn:hover { background: #3e3e3a; color: #d4d4cc; }
+
+  /* ── OUTPUT BOX ── */
+  .output-box {
+    background: var(--blue-bg);
+    border: 1px solid #c8d8f0;
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .output-box .output-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 12px;
+  }
+  .output-body { font-size: 13px; color: var(--ink); line-height: 1.7; }
+  .output-body strong { font-weight: 600; }
+  .output-body table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+  .output-body table th { background: #d8e6f8; padding: 7px 10px; text-align: left; font-weight: 600; border: 1px solid #c0d0e8; }
+  .output-body table td { padding: 7px 10px; border: 1px solid #c0d0e8; vertical-align: top; }
+
+  /* ── QUESTIONS ── */
+  .q-list { list-style: none; }
+  .q-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    position: relative;
+  }
+  .q-item:hover { border-color: var(--accent); background: var(--blue-bg); }
+  .q-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .q-text { font-size: 14px; font-weight: 500; color: var(--ink); flex: 1; }
+  .q-why { font-size: 12px; color: var(--ink-3); margin-top: 5px; }
+  .q-toggle { font-size: 18px; color: var(--ink-3); flex-shrink: 0; transition: transform .2s; }
+  .q-note-area { display: none; margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; }
+  .q-note-area.open { display: block; }
+  .q-item.open .q-toggle { transform: rotate(45deg); }
+  .note-input {
+    width: 100%;
+    min-height: 72px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--surface);
+    resize: vertical;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .note-input:focus { border-color: var(--accent); background: #fff; }
+  .note-input::placeholder { color: var(--ink-3); }
+  .save-note-btn {
+    margin-top: 8px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 7px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: opacity .15s;
+  }
+  .save-note-btn:hover { opacity: .88; }
+  .saved-note {
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--green-bg);
+    border: 1px solid #b8dfcc;
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-top: 8px;
+    display: none;
+    white-space: pre-wrap;
+  }
+  .saved-note.visible { display: block; }
+  .q-priority { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+
+  /* ── WORKFLOW STEPS ── */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step { display: flex; gap: 20px; position: relative; }
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 44px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+  }
+  .step-body { padding: 8px 0 32px; flex: 1; }
+  .step-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .step-desc { font-size: 13px; color: var(--ink-2); }
+  .step-badge {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 100px;
+  }
+  .auto { background: var(--blue-bg); color: var(--blue); }
+  .human { background: var(--amber-bg); color: var(--amber); }
+
+  /* ── EXPORT PANEL ── */
+  .export-area {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+  }
+  .export-area h3 { margin-bottom: 16px; }
+  .export-preview {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    color: var(--ink);
+    max-height: 360px;
+    overflow-y: auto;
+  }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font);
+    transition: opacity .15s, transform .1s;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: .9; }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-ghost { background: none; color: var(--accent); border: 1px solid var(--accent); }
+  .btn-ghost:hover { background: var(--blue-bg); }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* ── LIVE DEMO AREA ── */
+  .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 800px) { .demo-grid { grid-template-columns: 1fr; } }
+  .demo-col-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: var(--radius);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .2s, transform .2s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="logo-pill">Team 22</span>
+    <h1>Riipen AI Analytics Workflow</h1>
+  </div>
+  <div class="header-meta">Week 1 Discovery · June 24, 2026</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('overview')">Cohort Overview</button>
+  <button class="tab-btn" onclick="showTab('demo')">Live Demo</button>
+  <button class="tab-btn" onclick="showTab('workflow')">Workflow</button>
+  <button class="tab-btn" onclick="showTab('questions')">Meeting Questions</button>
+  <button class="tab-btn" onclick="showTab('export')">Export Notes</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 1 — COHORT OVERVIEW
+═══════════════════════════════════════ -->
+<div id="tab-overview" class="tab-panel active">
+<div class="main">
+  <div class="section-label">Live from your CSV data</div>
+  <h2>Cohort snapshot — Export 3 (35 teams)</h2>
+  <p>Built directly from the data Jen provided. Click any row for detail.</p>
+
+  <div class="stat-row">
+    <div class="stat red"><div class="stat-num">6</div><div class="stat-label">Red alert</div></div>
+    <div class="stat amber"><div class="stat-num">11</div><div class="stat-label">Watch</div></div>
+    <div class="stat green"><div class="stat-num">2</div><div class="stat-label">Completed</div></div>
+    <div class="stat blue"><div class="stat-num">32</div><div class="stat-label">M2 not yet submitted</div></div>
+    <div class="stat"><div class="stat-num">14</div><div class="stat-label">Survey gap (s2 = 0)</div></div>
+  </div>
+
+  <div class="card">
+    <table class="risk-table">
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>Risk</th>
+          <th>Primary signal</th>
+          <th>Suggested action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="team-name">Team 2F</div><div class="project-name">Retrofit.ai</div></td>
+          <td><span class="tag red"><span class="dot"></span>Red</span></td>
+          <td>3 flags, M2 missing, 0 survey responses</td>
+          <td class="action-text">Check in directly — no S2 + high flags = disengaged</td>
+        </tr>
+        <tr>
+          <td><div class="team-name">Team 1D</div><div class="project-name">AI-Enabled Governance Decision Platform</div></td>
+          <td><span class="tag red"><span class="dot"></span>Red</span></td>
+          <td>3 flags (completed but elevated throughout)</td>
+          <td class="action-text">Debrief with educator — completed with ongoing friction</td>
+        </tr>
+        <tr>
+          <td><div class="team-name">Team 2D</div><div class="project-name">High-Net-Worth Immigration Client Acquisition</div></td>
+          <td><span class="tag red"><span class="dot"></span>Red</span></td>
+          <td>2 flags, active</td>
+          <td class="action-text">Monitor conversations this week</td>
+        </tr>
+        <tr>
+          <td><div class="team-name">Team 2E</div><div class="project-name">SEO Optimization for Nettoyage Eco Vert</div></td>
+          <td><span class="tag red"><span class="dot"></span>Red</span></td>
+          <td>2 flags, M2 missing, 0 survey responses</td>
+          <td class="action-text">High risk — no survey + no M2 + 2 flags</td>
+        </tr>
+        <tr>
+          <td><div class="team-name">Team 3C</div><div class="project-name">Digital Marketing for Medical Courier</div></td>
+          <td><span class="tag red"><span class="dot"></span>Red</span></td>
+          <td>2 flags, M2 missing</td>
+          <td class="action-text">Check employer responsiveness in conversation log</td>
+        </tr>
+        <tr>
+          <td><div class="team-name">Team 2G</div><div class="project-name">Donor Trends — Niagara Focus</div></td>
+          <td><span class="tag red"><span class="dot"></span>Red</span></td>
+          <td>2 flags, M2 missing, partial surveys</td>
+          <td class="action-text">Nudge employer partner directly</td>
+        </tr>
+        <tr>
+          <td><div class="team-name">Team 16</div><div class="project-name">Go-to-Market Strategy for Bente</div></td>
+          <td><span class="tag amber"><span class="dot"></span>Watch</span></td>
+          <td>Work log 330 (lowest active team), neutral sentiment</td>
+          <td class="action-text">Low effort signal — may need motivation check</td>
+        </tr>
+        <tr>
+          <td><div class="team-name">Team 25</div><div class="project-name">Business Plan — Organic Pet Product</div></td>
+          <td><span class="tag amber"><span class="dot"></span>Watch</span></td>
+          <td>Slightly negative sentiment</td>
+          <td class="action-text">Monitor conversation — only negative sentiment in Export 1</td>
+        </tr>
+        <tr>
+          <td><div class="team-name">Team 4F</div><div class="project-name">Planning-First Marketing Strategy</div></td>
+          <td><span class="tag amber"><span class="dot"></span>Watch</span></td>
+          <td>1 flag, 0 s2 survey responses</td>
+          <td class="action-text">Survey gap — send reminder</td>
+        </tr>
+        <tr>
+          <td><div class="team-name">Team 29</div><div class="project-name">Global Expansion for Venue Ticketing</div></td>
+          <td><span class="tag green"><span class="dot"></span>Strong</span></td>
+          <td>Highest work log (8,325), positive sentiment</td>
+          <td class="action-text">Acknowledge with educator — strong example</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>What this tells us about thresholds</h3>
+    <p>From this dataset: <strong>flag_count ≥ 2</strong> is a reliable red signal (6 teams). <strong>M2 missing + active</strong> covers 32 of 33 active teams — too broad to use alone, needs a pairing signal. <strong>s2_survey_response = 0</strong> on an active team is a meaningful gap indicator. <strong>work_log_sum &lt; 600</strong> on active teams warrants a watch tier. These thresholds need Jen's input to calibrate — the questions panel captures exactly that.</p>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 2 — LIVE DEMO
+═══════════════════════════════════════ -->
+<div id="tab-demo" class="tab-panel">
+<div class="main">
+  <div class="section-label">How the AI analysis works</div>
+  <h2>From CSV to educator update</h2>
+  <p>This is the prompt your team will give to Claude. Paste it with the CSV attached.</p>
+
+  <div class="demo-grid">
+    <div>
+      <div class="demo-col-label">Step 1 — Analysis prompt (copy &amp; paste into Claude)</div>
+      <div class="prompt-box">
+        <div class="prompt-label">Prompt · Analytics layer</div>
+        <button class="copy-btn" onclick="copyPrompt('p1')">Copy</button>
+        <pre id="p1">You are an experience manager at Riipen analyzing weekly cohort data.
+The attached CSV is the team activity tracker export.
+
+Analyze the data and produce:
+
+1. A risk table with three tiers:
+   RED: flag_count ≥ 2, OR work_log_sum &lt; 500 AND team_state = "active", OR kickoff_id is blank AND team_state = "active"
+   YELLOW: flag_count = 1, OR conversation_summary = "slightly_negative", OR m2_submission_count is blank AND team_state = "active" AND m1_submission_count ≥ 1
+   GREEN: active teams with no flags and milestone progression on track
+
+   Format: Team Name | Project | Tier | Primary Signal | Suggested Action
+
+2. A cohort snapshot (3–5 sentences):
+   - Total active, completed, at-risk
+   - Highest-flag teams by name
+   - Milestone gap pattern
+   - Survey response gaps
+
+Do not hallucinate. Blank cell = no data, not zero.</pre>
+      </div>
+
+      <div class="demo-col-label" style="margin-top:20px">Step 2 — Narrative prompt (after step 1 output)</div>
+      <div class="prompt-box">
+        <div class="prompt-label">Prompt · Educator update</div>
+        <button class="copy-btn" onclick="copyPrompt('p2')">Copy</button>
+        <pre id="p2">Using the risk analysis above, write a weekly educator update email.
+
+Style:
+- Warm but direct, like a colleague briefing you
+- Open with 1–2 sentences of overall health
+- Include the risk table as "Teams to watch"
+- For each RED team: one action sentence starting with "I'd suggest..."
+- Close with one positive observation
+- Under 250 words total
+- No formal boilerplate ("pursuant to", "please be advised")
+
+Do not invent team names or statistics not in the input.</pre>
+      </div>
+    </div>
+
+    <div>
+      <div class="demo-col-label">Sample output — what Claude returns</div>
+      <div class="output-box">
+        <div class="output-label">Claude output · Educator update</div>
+        <div class="output-body">
+          <p>Hi [Educator name],</p>
+          <p>Things are moving well across most teams this week — 2 cohorts have completed the program and 33 remain active. That said, there are six teams showing elevated risk signals that are worth a direct check-in before the end of the week.</p>
+
+          <table>
+            <thead><tr><th>Team</th><th>Risk</th><th>Signal</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Team 2F</strong></td><td>🔴 Red</td><td>3 flags, no M2, 0 survey responses</td></tr>
+              <tr><td><strong>Team 2E</strong></td><td>🔴 Red</td><td>2 flags, M2 missing, no survey</td></tr>
+              <tr><td><strong>Team 3C</strong></td><td>🔴 Red</td><td>2 flags, M2 not submitted</td></tr>
+            </tbody>
+          </table>
+
+          <p><strong>I'd suggest</strong> reaching out to Team 2F directly this week — the combination of no survey responses and three flags suggests the team may have disengaged from the program entirely.</p>
+          <p><strong>I'd suggest</strong> checking the conversation thread for Team 2E — zero survey participation combined with two sentiment flags often means an unresponsive employer partner.</p>
+          <p>On a positive note: Team 29 leads the cohort with the highest work log and consistently positive sentiment — worth acknowledging in class.</p>
+          <p>Happy to loop in employer partners directly on any of the red-tier teams if that's helpful.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:14px 18px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+        <div class="section-label" style="margin-bottom:6px">What this replaces</div>
+        <p style="font-size:13px;margin:0;">Jen currently spends ~20–40 min per cohort going row by row through the dashboard. This workflow gets to the same output in under 3 minutes: 1 CSV export + 1 prompt paste + 1 click send.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 3 — WORKFLOW
+═══════════════════════════════════════ -->
+<div id="tab-workflow" class="tab-panel">
+<div class="main">
+  <div class="section-label">End-to-end process</div>
+  <h2>How the workflow runs week to week</h2>
+  <p>Every step except the last one is automated. Human input = one review + one click.</p>
+
+  <div class="card-grid">
+    <div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num" style="background:var(--blue-bg);color:var(--blue);">1</div>
+          <div class="step-body">
+            <div class="step-title">Export CSV from Riipen</div>
+            <div class="step-desc">Jen goes to the experience page → learner analytics → Export CSV. Same action she already does.</div>
+            <span class="step-badge human">Human · 30 sec</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" style="background:var(--blue-bg);color:var(--blue);">2</div>
+          <div class="step-body">
+            <div class="step-title">Upload CSV + paste analysis prompt</div>
+            <div class="step-desc">Open Claude (or Gemini Studio / ChatGPT). Attach the file. Paste the analytics prompt from the library. Hit enter.</div>
+            <span class="step-badge human">Human · 45 sec</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" style="background:var(--surface);color:var(--ink);">3</div>
+          <div class="step-body">
+            <div class="step-title">AI produces risk table + cohort snapshot</div>
+            <div class="step-desc">Flags RED/YELLOW/GREEN tiers, surfaces signal reasons, notes survey gaps and milestone stalls.</div>
+            <span class="step-badge auto">Automated · ~20 sec</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" style="background:var(--surface);color:var(--ink);">4</div>
+          <div class="step-body">
+            <div class="step-title">Paste narrative prompt</div>
+            <div class="step-desc">Second prompt in same conversation: "Using the analysis above, write the educator update email."</div>
+            <span class="step-badge human">Human · 10 sec</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" style="background:var(--surface);color:var(--ink);">5</div>
+          <div class="step-body">
+            <div class="step-title">AI drafts the educator email</div>
+            <div class="step-desc">Warm narrative, risk table embedded, action suggestions per red-tier team, positive close.</div>
+            <span class="step-badge auto">Automated · ~15 sec</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" style="background:var(--amber-bg);color:var(--amber);">6</div>
+          <div class="step-body">
+            <div class="step-title">Review + click send</div>
+            <div class="step-desc">Jen reads the draft, makes any small edits, copies into email client. This is the only gate.</div>
+            <span class="step-badge human">Human · 2 min</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <h3>IT clearance boundary</h3>
+        <p>This workflow requires zero IT approval. Everything runs on tools Jen already has (Claude, ChatGPT) and uses only files she manually exports. No API keys. No platform credentials stored anywhere. No automated platform access.</p>
+        <p style="margin-bottom:0">The <strong>agentic route</strong> (where the AI logs into Riipen directly and pulls data on a schedule) is documented in the final recommendation as a future-state option — with exactly what IT would need to approve.</p>
+      </div>
+
+      <div class="card">
+        <h3>Tools being evaluated (Week 3)</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-radius:var(--radius);">
+            <span style="font-weight:600;font-size:13px">Claude (Projects)</span>
+            <span class="tag blue">Best narrative quality</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-radius:var(--radius);">
+            <span style="font-weight:600;font-size:13px">Google AI Studio</span>
+            <span class="tag green">Free · Google ecosystem</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-radius:var(--radius);">
+            <span style="font-weight:600;font-size:13px">NotebookLM</span>
+            <span class="tag blue">No prompts needed</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-radius:var(--radius);">
+            <span style="font-weight:600;font-size:13px">ChatGPT</span>
+            <span class="tag amber">Jen already licensed</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-radius:var(--radius);">
+            <span style="font-weight:600;font-size:13px">Julius AI</span>
+            <span class="tag blue">CSV-native charts</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 4 — MEETING QUESTIONS
+═══════════════════════════════════════ -->
+<div id="tab-questions" class="tab-panel">
+<div class="main">
+  <div class="section-label">Click any question to take notes · Notes save locally</div>
+  <h2>High-impact questions for today's meeting</h2>
+  <p>These are the gaps between what we know from the data and what we need from Jen to finalize thresholds and the educator update format.</p>
+
+  <hr class="divider">
+  <h3 style="margin-bottom:4px">🎯 Threshold calibration</h3>
+  <p style="margin-bottom:14px;font-size:13px">We have proposed thresholds from the data. These questions let Jen validate or adjust them.</p>
+
+  <ul class="q-list">
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--red)">Must ask ·</span>
+          <span class="q-text"> When you see a flag_count of 2 or more on an active team, what's your first action — do you go into the platform immediately, or does it need a second signal before you escalate?</span>
+          <div class="q-why">Why it matters: This sets the Red vs Watch boundary. Right now we're using flag ≥ 2 as Red, but if Jen acts only on flag + another signal, we need to tighten it.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--red)">Must ask ·</span>
+          <span class="q-text"> Almost every active team in Export 3 is missing M2. Is that expected at this stage of the program, or is a missing M2 actually a signal worth flagging?</span>
+          <div class="q-why">Why it matters: 32 of 33 active teams have no M2 submission. If M2 isn't due yet, this is noise. We need to know the program timeline before we use milestone gaps as a signal.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--amber)">Good to ask ·</span>
+          <span class="q-text"> What's the typical work_log_sum for a healthy team at this stage? We see a range from 330 to 8,325 in Export 1 — what floor would you consider low enough to flag?</span>
+          <div class="q-why">Why it matters: Work log is our best proxy for effort, but without a program-specific baseline we can't set a meaningful threshold.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--amber)">Good to ask ·</span>
+          <span class="q-text"> If a team has zero survey responses on S2 but no flags, do you consider that a risk or just an incomplete data point?</span>
+          <div class="q-why">Why it matters: 14 teams in Export 3 have zero S2 responses. We need to know whether to flag that alone or only in combination with another signal.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+  </ul>
+
+  <hr class="divider">
+  <h3 style="margin-bottom:4px">📧 Educator update format</h3>
+  <p style="margin-bottom:14px;font-size:13px">We've built on the example updates Jen sent. These questions lock in the template before we finalize prompts.</p>
+
+  <ul class="q-list">
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--red)">Must ask ·</span>
+          <span class="q-text"> The three update examples you sent have different formats — one is a student-by-student breakdown, one is narrative only, one is narrative plus action items. Which of those comes closest to what you'd want every week?</span>
+          <div class="q-why">Why it matters: We need one canonical template to train our prompts on. Right now we're targeting the hybrid (table + narrative), but Jen should confirm.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--red)">Must ask ·</span>
+          <span class="q-text"> When you write the "Riipen action taken" column in Example 1 — is that something you want the AI to suggest, or is that always written by you because it involves platform-level actions the educator can't take?</span>
+          <div class="q-why">Why it matters: Example 1 has a very specific format with Riipen-side actions. If that's Jen's internal record (not the educator update), we're building a different output than we think.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--amber)">Good to ask ·</span>
+          <span class="q-text"> Do different educators want different formats, or do you send the same structure to everyone?</span>
+          <div class="q-why">Why it matters: If educators have preferences, the system needs to support multiple templates. If it's one standard, we build one template and we're done.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--ink-3)">If time ·</span>
+          <span class="q-text"> How often do you mention specific team names in the educator update vs. keeping it cohort-level?</span>
+          <div class="q-why">Why it matters: Example 2 uses [Team X] placeholders. Example 1 uses student names. Knowing the norm helps us calibrate how specific the AI output should be.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+  </ul>
+
+  <hr class="divider">
+  <h3 style="margin-bottom:4px">🔁 Workflow &amp; scale</h3>
+  <p style="margin-bottom:14px;font-size:13px">Process questions that affect how we design the handoff guide.</p>
+
+  <ul class="q-list">
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--red)">Must ask ·</span>
+          <span class="q-text"> How many active experiences are you monitoring right now, and how many CSV files does that mean you're exporting per week?</span>
+          <div class="q-why">Why it matters: If it's 5 experiences, the manual load is manageable. If it's 25+, we need to think about batching or a multi-file prompt strategy.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--amber)">Good to ask ·</span>
+          <span class="q-text"> What day and time do you typically send the educator update — and does the export need to happen right before, or is a 24-hour-old snapshot fine?</span>
+          <div class="q-why">Why it matters: Determines whether we need to account for data freshness in the prompt, and informs the weekly run cadence in the handoff guide.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--amber)">Good to ask ·</span>
+          <span class="q-text"> Is it always just you running this, or would another experience manager on your team also be using this workflow?</span>
+          <div class="q-why">Why it matters: If multiple people use it, the handoff guide needs to be more thorough and the prompts need to work without tribal knowledge about the data structure.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+
+    <li class="q-item" onclick="toggleQ(this)">
+      <div class="q-header">
+        <div>
+          <span class="q-priority" style="color:var(--ink-3)">If time ·</span>
+          <span class="q-text"> You mentioned a possible end-of-program summary update — would that use the same CSV format, or does it pull from different data?</span>
+          <div class="q-why">Why it matters: If the end-of-program update is a separate use case, we may want to build a second prompt variant for it in Week 5.</div>
+        </div>
+        <span class="q-toggle">+</span>
+      </div>
+      <div class="q-note-area">
+        <textarea class="note-input" placeholder="Jen's answer..."></textarea>
+        <button class="save-note-btn" onclick="saveNote(event, this)">Save note</button>
+        <div class="saved-note"></div>
+      </div>
+    </li>
+  </ul>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 5 — EXPORT
+═══════════════════════════════════════ -->
+<div id="tab-export" class="tab-panel">
+<div class="main">
+  <div class="section-label">After the meeting</div>
+  <h2>Export your notes</h2>
+  <p>All notes you've taken in the Questions tab will appear here. Copy them back into Claude to update thresholds and finalize the prompt library.</p>
+
+  <div class="export-area">
+    <h3>Notes summary</h3>
+    <div class="export-preview" id="export-preview">No notes saved yet. Go to the Meeting Questions tab and add notes during the call.</div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="generateExport()">Refresh export</button>
+      <button class="btn btn-secondary" onclick="copyExport()">Copy all notes</button>
+      <button class="btn btn-ghost" onclick="clearAll()">Clear all notes</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="card">
+    <h3>After the meeting: paste notes into Claude</h3>
+    <p>Copy the export above and bring it back to Claude with this message:</p>
+    <div class="prompt-box" style="margin-top:12px;margin-bottom:0">
+      <div class="prompt-label">Prompt · Post-meeting update</div>
+      <button class="copy-btn" onclick="copyPrompt('p3')">Copy</button>
+      <pre id="p3">Here are my notes from the Jen Wallace meeting today. Based on these answers, please:
+
+1. Update the risk threshold definitions (flag count, milestone gaps, work log floor)
+2. Confirm or revise the educator update template format
+3. Flag any gaps that still need to be resolved before Week 3 testing
+4. Give me a revised version of the two core prompts
+
+[PASTE YOUR NOTES HERE]</pre>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast">Copied!</div>
+
+<script>
+  // Tab switching
+  function showTab(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    event.target.classList.add('active');
+    if (id === 'export') generateExport();
+  }
+
+  // Question toggle
+  function toggleQ(item) {
+    const noteArea = item.querySelector('.q-note-area');
+    const toggle = item.querySelector('.q-toggle');
+    const isOpen = noteArea.classList.contains('open');
+    noteArea.classList.toggle('open', !isOpen);
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Save note
+  function saveNote(e, btn) {
+    e.stopPropagation();
+    const noteArea = btn.closest('.q-note-area');
+    const input = noteArea.querySelector('.note-input');
+    const display = noteArea.querySelector('.saved-note');
+    const qItem = btn.closest('.q-item');
+    const qText = qItem.querySelector('.q-text').textContent.trim();
+    const val = input.value.trim();
+    if (!val) return;
+    display.textContent = val;
+    display.classList.add('visible');
+    input.style.display = 'none';
+    btn.style.display = 'none';
+    const key = 'riipen_note_' + btoa(qText.substring(0, 40));
+    localStorage.setItem(key, JSON.stringify({ q: qText, a: val }));
+    showToast('Note saved');
+  }
+
+  // Load saved notes on page load
+  function loadNotes() {
+    document.querySelectorAll('.q-item').forEach(item => {
+      const qText = item.querySelector('.q-text').textContent.trim();
+      const key = 'riipen_note_' + btoa(qText.substring(0, 40));
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        const { a } = JSON.parse(stored);
+        const noteArea = item.querySelector('.q-note-area');
+        const input = noteArea.querySelector('.note-input');
+        const display = noteArea.querySelector('.saved-note');
+        const btn = noteArea.querySelector('.save-note-btn');
+        display.textContent = a;
+        display.classList.add('visible');
+        input.style.display = 'none';
+        btn.style.display = 'none';
+      }
+    });
+  }
+
+  // Generate export
+  function generateExport() {
+    const notes = [];
+    document.querySelectorAll('.q-item').forEach(item => {
+      const qText = item.querySelector('.q-text').textContent.trim();
+      const display = item.querySelector('.saved-note');
+      if (display && display.classList.contains('visible')) {
+        notes.push('Q: ' + qText + '\nA: ' + display.textContent);
+      }
+    });
+    const preview = document.getElementById('export-preview');
+    if (notes.length === 0) {
+      preview.textContent = 'No notes saved yet. Go to the Meeting Questions tab and add notes during the call.';
+    } else {
+      preview.textContent = '=== RIIPEN MEETING NOTES — ' + new Date().toLocaleDateString() + ' ===\n\n' + notes.join('\n\n---\n\n');
+    }
+  }
+
+  // Copy prompt
+  function copyPrompt(id) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => showToast('Prompt copied'));
+  }
+
+  // Copy export
+  function copyExport() {
+    const text = document.getElementById('export-preview').textContent;
+    navigator.clipboard.writeText(text).then(() => showToast('Notes copied'));
+  }
+
+  // Clear all
+  function clearAll() {
+    if (!confirm('Clear all saved notes?')) return;
+    Object.keys(localStorage).filter(k => k.startsWith('riipen_note_')).forEach(k => localStorage.removeItem(k));
+    document.querySelectorAll('.q-item').forEach(item => {
+      const noteArea = item.querySelector('.q-note-area');
+      const input = noteArea.querySelector('.note-input');
+      const display = noteArea.querySelector('.saved-note');
+      const btn = noteArea.querySelector('.save-note-btn');
+      input.value = '';
+      input.style.display = '';
+      display.textContent = '';
+      display.classList.remove('visible');
+      btn.style.display = '';
+      noteArea.classList.remove('open');
+      item.classList.remove('open');
+    });
+    document.getElementById('export-preview').textContent = 'No notes saved yet.';
+    showToast('Notes cleared');
+  }
+
+  // Toast
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  loadNotes();
+</script>
+</body>
+</html>

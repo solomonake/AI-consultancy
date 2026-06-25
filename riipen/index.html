@@ -95,6 +95,54 @@
   }
   .hero-chip span { color: rgba(255,255,255,.9); font-weight: 500; }
 
+  .context-strip {
+    background: var(--accent-light);
+    border-bottom: 1px solid #d8e0ef;
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .context-copy {
+    max-width: 760px;
+  }
+  .context-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 5px;
+  }
+  .context-copy p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .context-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .context-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid #cbd8f0;
+    background: #fff;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: border-color .15s, color .15s, background .15s;
+  }
+  .context-link:hover { border-color: var(--accent); color: var(--accent); background: #fff; }
+
   /* ── PROGRESS BAR ── */
   .progress-wrap {
     background: var(--surface);
@@ -397,6 +445,7 @@
 
   @media (max-width: 600px) {
     .hero { padding: 32px 20px 28px; }
+    .context-strip { padding: 14px 20px; }
     .progress-wrap { padding: 12px 20px; }
     .main { padding: 32px 16px 60px; }
   }
@@ -412,6 +461,16 @@
     <div class="hero-chip">⏱ Takes about <span>10–15 minutes</span></div>
     <div class="hero-chip">💾 Auto-saves as you go</div>
     <div class="hero-chip">📬 Sends to Team 22 on submit</div>
+  </div>
+</div>
+
+<div class="context-strip">
+  <div class="context-copy">
+    <div class="context-kicker">Workflow Calibration</div>
+    <p id="context-copy">If you already reviewed the workflow demo, any calibration notes you saved there will be bundled with this session when you submit.</p>
+  </div>
+  <div class="context-actions">
+    <a class="context-link" href="/">Back to workflow demo</a>
   </div>
 </div>
 
@@ -807,7 +866,7 @@
     <button class="submit-btn" onclick="submitToGitHub()">
       Open GitHub Issue with my answers →
     </button>
-    <div class="submit-note">You'll be taken to GitHub to submit. Your answers are pre-filled. Just click "Submit new issue."</div>
+    <div class="submit-note">You'll be taken to GitHub to submit. Your saved answers here, plus any workflow calibration notes from the demo page, will be packaged into the issue for Team 22.</div>
     <div class="issue-preview" id="issue-preview">
       <pre id="issue-body-preview"></pre>
       <button class="copy-issue-btn" onclick="copyIssueBody()">Copy issue text</button>
@@ -821,6 +880,7 @@
 <script>
 // ── STATE ──
 const state = JSON.parse(localStorage.getItem('jen_qa_state') || '{}');
+const bridgeState = JSON.parse(localStorage.getItem('riipen_bridge_state') || '{}');
 let totalAnswered = 0;
 const TOTAL_QS = 18;
 
@@ -830,7 +890,19 @@ window.addEventListener('DOMContentLoaded', () => {
   initDragRank();
   updateProgress();
   initSliderLabels();
+  initContextStrip();
 });
+
+function initContextStrip() {
+  const params = new URLSearchParams(window.location.search);
+  const source = params.get('source');
+  const copy = document.getElementById('context-copy');
+  if (source === 'workflow-demo') {
+    copy.textContent = 'Thanks for reviewing the workflow demo first. Any quick calibration notes you saved there will be bundled with this session when you submit.';
+  } else if (bridgeState.workflow_fit || bridgeState.biggest_gap || bridgeState.reality_notes) {
+    copy.textContent = 'We found saved workflow calibration notes from the demo page. They will be bundled with this session when you submit to Team 22.';
+  }
+}
 
 function restoreState() {
   // Textareas
@@ -1030,6 +1102,38 @@ function submitToGitHub() {
 
 function buildIssueBody() {
   const lines = ['# Jen Wallace — Discovery Input\n', `**Submitted:** ${new Date().toLocaleString()}\n`, '---\n'];
+
+  const bridgeEntries = [];
+  if (bridgeState.workflow_fit) bridgeEntries.push(`- **Workflow fit:** ${bridgeState.workflow_fit}`);
+  if (bridgeState.biggest_gap) bridgeEntries.push(`- **Biggest gap to reality:** ${bridgeState.biggest_gap}`);
+  if (bridgeState.reality_notes) bridgeEntries.push(`- **What would make it usable next week:** ${bridgeState.reality_notes}`);
+
+  if (bridgeEntries.length) {
+    lines.push('## Workflow demo calibration');
+    lines.push(...bridgeEntries);
+    lines.push('');
+  }
+
+  const savedMeetingNotes = [];
+  Object.keys(localStorage)
+    .filter(key => key.startsWith('riipen_note_'))
+    .sort()
+    .forEach(key => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key) || '{}');
+        if (parsed.q && parsed.a) {
+          savedMeetingNotes.push(`- **${parsed.q}**\n  ${parsed.a}`);
+        }
+      } catch (error) {
+        // Ignore malformed local note entries.
+      }
+    });
+
+  if (savedMeetingNotes.length) {
+    lines.push('## Workflow review notes');
+    lines.push(...savedMeetingNotes);
+    lines.push('');
+  }
 
   const qMap = {
     workflow_steps: 'Q1: Workflow steps (start to finish)',

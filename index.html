@@ -88,6 +88,40 @@
   .tab-btn:hover { color: var(--ink); }
   .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
+  /* ── BRIDGE STRIP ── */
+  .bridge-strip {
+    background: linear-gradient(180deg, var(--blue-bg) 0%, #f6f8fc 100%);
+    border-bottom: 1px solid #d8e0ef;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .bridge-copy { max-width: 760px; }
+  .bridge-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .bridge-copy h2 {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .bridge-copy p {
+    margin: 0;
+    font-size: 13px;
+  }
+  .bridge-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
   /* ── MAIN ── */
   .main { max-width: 1100px; margin: 0 auto; padding: 32px; }
 
@@ -120,6 +154,80 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     margin-bottom: 16px;
+  }
+  .bridge-card {
+    background: linear-gradient(180deg, #fff 0%, #fbfcff 100%);
+    border: 1px solid #dce4f3;
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+  .bridge-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1.2fr 1.6fr;
+    gap: 16px;
+    margin-top: 18px;
+  }
+  .bridge-field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .mini-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .mini-chip {
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ink-2);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .mini-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .mini-chip.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .bridge-input {
+    width: 100%;
+    min-height: 112px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--surface);
+    resize: vertical;
+    outline: none;
+  }
+  .bridge-input:focus { border-color: var(--accent); background: #fff; }
+  .bridge-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .bridge-note {
+    font-size: 12px;
+    color: var(--ink-3);
+    max-width: 560px;
+  }
+  .bridge-status {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--green);
+    min-height: 1em;
   }
   @media (max-width: 720px) { .card-grid { grid-template-columns: 1fr; } }
 
@@ -428,6 +536,16 @@
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 900px) {
+    .bridge-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 720px) {
+    .header,
+    .tabs,
+    .bridge-strip { padding-left: 20px; padding-right: 20px; }
+  }
 </style>
 </head>
 <body>
@@ -441,11 +559,23 @@
 </div>
 
 <div class="tabs">
-  <button class="tab-btn active" onclick="showTab('overview')">Cohort Overview</button>
-  <button class="tab-btn" onclick="showTab('demo')">Live Demo</button>
-  <button class="tab-btn" onclick="showTab('workflow')">Workflow</button>
-  <button class="tab-btn" onclick="showTab('questions')">Meeting Questions</button>
-  <button class="tab-btn" onclick="showTab('export')">Export Notes</button>
+  <button class="tab-btn active" data-tab="overview" onclick="activateTab('overview', this)">Cohort Overview</button>
+  <button class="tab-btn" data-tab="demo" onclick="activateTab('demo', this)">Live Demo</button>
+  <button class="tab-btn" data-tab="workflow" onclick="activateTab('workflow', this)">Workflow</button>
+  <button class="tab-btn" data-tab="questions" onclick="activateTab('questions', this)">Calibration Notes</button>
+  <button class="tab-btn" data-tab="export" onclick="activateTab('export', this)">Session Summary</button>
+</div>
+
+<div class="bridge-strip">
+  <div class="bridge-copy">
+    <div class="bridge-kicker">Client Review Flow</div>
+    <h2>Review the workflow here, then use the short calibration session to tailor it.</h2>
+    <p>The demo shows the proposed experience. The calibration session captures your preferences on thresholds, output format, and guardrails so Team 22 can refine the next version.</p>
+  </div>
+  <div class="bridge-actions">
+    <button class="btn btn-secondary" onclick="activateTab('questions')">Open calibration notes</button>
+    <button class="btn btn-primary" onclick="goToIntake()">Continue to full input session</button>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════
@@ -463,6 +593,44 @@
     <div class="stat green"><div class="stat-num">2</div><div class="stat-label">Completed</div></div>
     <div class="stat blue"><div class="stat-num">32</div><div class="stat-label">M2 not yet submitted</div></div>
     <div class="stat"><div class="stat-num">14</div><div class="stat-label">Survey gap (s2 = 0)</div></div>
+  </div>
+
+  <div class="bridge-card">
+    <div class="section-label">Quick calibration</div>
+    <h3>Before you move on, tell us where this feels right and where it still feels too idealized.</h3>
+    <p>These notes stay in this browser until you choose to share them with Team 22 through the input session.</p>
+    <div class="bridge-grid">
+      <div>
+        <div class="bridge-field-label">How close is this to your real weekly process?</div>
+        <div class="mini-chip-group" id="bridge-fit">
+          <button class="mini-chip" type="button" onclick="selectBridgeChip(this, 'workflow_fit')">Very close</button>
+          <button class="mini-chip" type="button" onclick="selectBridgeChip(this, 'workflow_fit')">Close, but needs edits</button>
+          <button class="mini-chip" type="button" onclick="selectBridgeChip(this, 'workflow_fit')">Too idealized</button>
+        </div>
+      </div>
+      <div>
+        <div class="bridge-field-label">What is the biggest gap to reality?</div>
+        <div class="mini-chip-group" id="bridge-gap">
+          <button class="mini-chip" type="button" onclick="selectBridgeChip(this, 'biggest_gap')">Judgment calls</button>
+          <button class="mini-chip" type="button" onclick="selectBridgeChip(this, 'biggest_gap')">Data quality</button>
+          <button class="mini-chip" type="button" onclick="selectBridgeChip(this, 'biggest_gap')">Output tone</button>
+          <button class="mini-chip" type="button" onclick="selectBridgeChip(this, 'biggest_gap')">IT boundary</button>
+          <button class="mini-chip" type="button" onclick="selectBridgeChip(this, 'biggest_gap')">Change management</button>
+        </div>
+      </div>
+      <div>
+        <div class="bridge-field-label">What would make this feel usable next week?</div>
+        <textarea class="bridge-input" id="bridge-notes" placeholder="A short note is enough. For example: show fewer teams, use more educator-friendly language, or make the risk logic easier to explain."></textarea>
+      </div>
+    </div>
+    <div class="bridge-meta">
+      <div class="bridge-note">If you continue to the full input session, we’ll carry these notes over so Team 22 can review them alongside the structured answers.</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div class="bridge-status" id="bridge-status"></div>
+        <button class="btn btn-secondary" onclick="saveBridgeFeedback()">Save calibration notes</button>
+        <button class="btn btn-primary" onclick="goToIntake()">Continue to full input session</button>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -740,9 +908,9 @@ Do not invent team names or statistics not in the input.</pre>
 ═══════════════════════════════════════ -->
 <div id="tab-questions" class="tab-panel">
 <div class="main">
-  <div class="section-label">Click any question to take notes · Notes save locally</div>
-  <h2>High-impact questions for today's meeting</h2>
-  <p>These are the gaps between what we know from the data and what we need from Jen to finalize thresholds and the educator update format.</p>
+  <div class="section-label">Click any prompt to capture notes · Notes stay in this browser until shared</div>
+  <h2>Calibration prompts for the workflow review</h2>
+  <p>Use these during a live conversation or async review to capture the decisions that will change thresholds, output format, and handoff guidance.</p>
 
   <hr class="divider">
   <h3 style="margin-bottom:4px">🎯 Threshold calibration</h3>
@@ -963,8 +1131,8 @@ Do not invent team names or statistics not in the input.</pre>
 <div id="tab-export" class="tab-panel">
 <div class="main">
   <div class="section-label">After the meeting</div>
-  <h2>Export your notes</h2>
-  <p>All notes you've taken in the Questions tab will appear here. Copy them back into Claude to update thresholds and finalize the prompt library.</p>
+  <h2>Session summary</h2>
+  <p>Everything saved in the calibration notes tab appears here. You can copy it for Team 22, or continue into the full input session to package it with the structured feedback form.</p>
 
   <div class="export-area">
     <h3>Notes summary</h3>
@@ -978,8 +1146,8 @@ Do not invent team names or statistics not in the input.</pre>
 
   <hr class="divider">
   <div class="card">
-    <h3>After the meeting: paste notes into Claude</h3>
-    <p>Copy the export above and bring it back to Claude with this message:</p>
+    <h3>Team 22 follow-up prompt</h3>
+    <p>If you want an agent to synthesize the conversation quickly, copy the summary above and use this prompt:</p>
     <div class="prompt-box" style="margin-top:12px;margin-bottom:0">
       <div class="prompt-label">Prompt · Post-meeting update</div>
       <button class="copy-btn" onclick="copyPrompt('p3')">Copy</button>
@@ -992,6 +1160,9 @@ Do not invent team names or statistics not in the input.</pre>
 
 [PASTE YOUR NOTES HERE]</pre>
     </div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="goToIntake()">Continue to full input session</button>
+    </div>
   </div>
 </div>
 </div>
@@ -1000,13 +1171,62 @@ Do not invent team names or statistics not in the input.</pre>
 <div id="toast">Copied!</div>
 
 <script>
+  const bridgeState = JSON.parse(localStorage.getItem('riipen_bridge_state') || '{}');
+
   // Tab switching
-  function showTab(id) {
+  function activateTab(id, btn = null) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('tab-' + id).classList.add('active');
-    event.target.classList.add('active');
+    const activeBtn = btn || document.querySelector(`.tab-btn[data-tab="${id}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
     if (id === 'export') generateExport();
+  }
+
+  function showTab(id) {
+    activateTab(id, typeof event !== 'undefined' ? event.target : null);
+  }
+
+  function goToIntake() {
+    persistBridgeState();
+    window.location.href = '/riipen/?source=workflow-demo';
+  }
+
+  function selectBridgeChip(chip, key) {
+    chip.parentElement.querySelectorAll('.mini-chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+    bridgeState[key] = chip.textContent.trim();
+  }
+
+  function saveBridgeFeedback() {
+    persistBridgeState();
+    const status = document.getElementById('bridge-status');
+    status.textContent = 'Saved for Team 22';
+    setTimeout(() => { status.textContent = ''; }, 2200);
+    showToast('Calibration notes saved');
+  }
+
+  function persistBridgeState() {
+    const notes = document.getElementById('bridge-notes').value.trim();
+    if (notes) bridgeState.reality_notes = notes;
+    else delete bridgeState.reality_notes;
+    localStorage.setItem('riipen_bridge_state', JSON.stringify(bridgeState));
+  }
+
+  function restoreBridgeFeedback() {
+    if (bridgeState.workflow_fit) {
+      document.querySelectorAll('#bridge-fit .mini-chip').forEach(chip => {
+        if (chip.textContent.trim() === bridgeState.workflow_fit) chip.classList.add('selected');
+      });
+    }
+    if (bridgeState.biggest_gap) {
+      document.querySelectorAll('#bridge-gap .mini-chip').forEach(chip => {
+        if (chip.textContent.trim() === bridgeState.biggest_gap) chip.classList.add('selected');
+      });
+    }
+    if (bridgeState.reality_notes) {
+      document.getElementById('bridge-notes').value = bridgeState.reality_notes;
+    }
   }
 
   // Question toggle
@@ -1117,6 +1337,7 @@ Do not invent team names or statistics not in the input.</pre>
   }
 
   loadNotes();
+  restoreBridgeFeedback();
 </script>
 </body>
 </html>

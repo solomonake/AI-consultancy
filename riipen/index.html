@@ -896,8 +896,9 @@
 
 </div>
 
-<form name="riipen-feedback" method="POST" netlify hidden>
+<form name="riipen-feedback" method="POST" action="/riipen/" data-netlify="true" netlify-honeypot="bot-field" hidden>
   <input type="hidden" name="form-name" value="riipen-feedback">
+  <input type="hidden" name="bot-field" value="">
   <input type="hidden" name="subject" value="Riipen workflow feedback">
   <input type="hidden" name="source" value="">
   <input type="hidden" name="workflow_fit" value="">
@@ -1177,6 +1178,7 @@ async function submitFeedback() {
   const source = params.get('source') || 'direct';
   const payload = new URLSearchParams({
     'form-name': 'riipen-feedback',
+    'bot-field': '',
     subject: `Riipen workflow feedback — ${new Date().toLocaleDateString()}`,
     source,
     workflow_fit: bridgeState.workflow_fit || '',
@@ -1187,7 +1189,7 @@ async function submitFeedback() {
   });
 
   try {
-    const response = await fetch('/', {
+    const response = await fetch('/riipen/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: payload.toString()

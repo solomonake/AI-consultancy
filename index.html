@@ -229,6 +229,9 @@
     color: var(--green);
     min-height: 1em;
   }
+  .bridge-status.muted {
+    color: var(--ink-3);
+  }
   @media (max-width: 720px) { .card-grid { grid-template-columns: 1fr; } }
 
   /* ── STAT TILES ── */
@@ -385,30 +388,17 @@
   }
   .note-input:focus { border-color: var(--accent); background: #fff; }
   .note-input::placeholder { color: var(--ink-3); }
-  .save-note-btn {
-    margin-top: 8px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    padding: 7px 16px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: var(--font);
-    transition: opacity .15s;
-  }
-  .save-note-btn:hover { opacity: .88; }
+  .save-note-btn { display: none; }
   .saved-note {
-    font-size: 13px;
-    color: var(--ink);
-    background: var(--green-bg);
-    border: 1px solid #b8dfcc;
-    border-radius: var(--radius);
-    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--green);
+    background: transparent;
+    border: none;
+    padding: 0;
     margin-top: 8px;
     display: none;
     white-space: pre-wrap;
+    font-weight: 600;
   }
   .saved-note.visible { display: block; }
   .q-priority { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
@@ -569,12 +559,12 @@
 <div class="bridge-strip">
   <div class="bridge-copy">
     <div class="bridge-kicker">Client Review Flow</div>
-    <h2>Review the workflow here, then use the short calibration session to tailor it.</h2>
-    <p>The demo shows the proposed experience. The calibration session captures your preferences on thresholds, output format, and guardrails so Team 22 can refine the next version.</p>
+    <h2>Hi Jen, this is the proposed workflow plus a short feedback layer to tune the prompt library.</h2>
+    <p>Please review the demo first, then share what feels accurate, what feels too idealized, and what would make the prompts and guardrails more useful before anything is finalized.</p>
   </div>
   <div class="bridge-actions">
-    <button class="btn btn-secondary" onclick="activateTab('questions')">Open calibration notes</button>
-    <button class="btn btn-primary" onclick="goToIntake()">Continue to full input session</button>
+    <button class="btn btn-secondary" onclick="activateTab('questions')">Open feedback prompts</button>
+    <button class="btn btn-primary" onclick="goToIntake()">Continue to feedback session</button>
   </div>
 </div>
 
@@ -597,8 +587,8 @@
 
   <div class="bridge-card">
     <div class="section-label">Quick calibration</div>
-    <h3>Before you move on, tell us where this feels right and where it still feels too idealized.</h3>
-    <p>These notes stay in this browser until you choose to share them with Team 22 through the input session.</p>
+    <h3>Before you move on, tell us what this gets right and what we should refine before rollout.</h3>
+    <p>These notes auto-save in this browser and will carry into the feedback session if you continue.</p>
     <div class="bridge-grid">
       <div>
         <div class="bridge-field-label">How close is this to your real weekly process?</div>
@@ -624,11 +614,11 @@
       </div>
     </div>
     <div class="bridge-meta">
-      <div class="bridge-note">If you continue to the full input session, we’ll carry these notes over so Team 22 can review them alongside the structured answers.</div>
+      <div class="bridge-note">This is a quick reality check on the proposed workflow. The goal is to make the prompt library, thresholds, and final handoff feel practical for your real weekly work.</div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <div class="bridge-status" id="bridge-status"></div>
-        <button class="btn btn-secondary" onclick="saveBridgeFeedback()">Save calibration notes</button>
-        <button class="btn btn-primary" onclick="goToIntake()">Continue to full input session</button>
+        <div class="bridge-status muted" id="bridge-status">Auto-saves as you go</div>
+        <button class="btn btn-secondary" onclick="resetBridgeFeedback()">Start fresh</button>
+        <button class="btn btn-primary" onclick="goToIntake()">Continue to feedback session</button>
       </div>
     </div>
   </div>
@@ -908,9 +898,9 @@ Do not invent team names or statistics not in the input.</pre>
 ═══════════════════════════════════════ -->
 <div id="tab-questions" class="tab-panel">
 <div class="main">
-  <div class="section-label">Click any prompt to capture notes · Notes stay in this browser until shared</div>
-  <h2>Calibration prompts for the workflow review</h2>
-  <p>Use these during a live conversation or async review to capture the decisions that will change thresholds, output format, and handoff guidance.</p>
+  <div class="section-label">Click any prompt to capture notes · Auto-saves in this browser until shared</div>
+  <h2>Feedback prompts for the workflow review</h2>
+  <p>These short prompts are here to help us tune the prompt library, thresholds, and handoff guidance after you review the proposed workflow.</p>
 
   <hr class="divider">
   <h3 style="margin-bottom:4px">🎯 Threshold calibration</h3>
@@ -1132,7 +1122,7 @@ Do not invent team names or statistics not in the input.</pre>
 <div class="main">
   <div class="section-label">After the meeting</div>
   <h2>Session summary</h2>
-  <p>Everything saved in the calibration notes tab appears here. You can copy it for Team 22, or continue into the full input session to package it with the structured feedback form.</p>
+  <p>Everything saved in the feedback prompts tab appears here. You can copy it for Team 22, or continue into the structured feedback session to submit it privately.</p>
 
   <div class="export-area">
     <h3>Notes summary</h3>
@@ -1161,7 +1151,7 @@ Do not invent team names or statistics not in the input.</pre>
 [PASTE YOUR NOTES HERE]</pre>
     </div>
     <div class="btn-row" style="margin-top:16px">
-      <button class="btn btn-primary" onclick="goToIntake()">Continue to full input session</button>
+      <button class="btn btn-primary" onclick="goToIntake()">Continue to feedback session</button>
     </div>
   </div>
 </div>
@@ -1181,6 +1171,7 @@ Do not invent team names or statistics not in the input.</pre>
     const activeBtn = btn || document.querySelector(`.tab-btn[data-tab="${id}"]`);
     if (activeBtn) activeBtn.classList.add('active');
     if (id === 'export') generateExport();
+    if (id === 'questions') openFirstPrompt();
   }
 
   function showTab(id) {
@@ -1196,21 +1187,31 @@ Do not invent team names or statistics not in the input.</pre>
     chip.parentElement.querySelectorAll('.mini-chip').forEach(c => c.classList.remove('selected'));
     chip.classList.add('selected');
     bridgeState[key] = chip.textContent.trim();
+    persistBridgeState('Autosaved');
   }
 
-  function saveBridgeFeedback() {
-    persistBridgeState();
-    const status = document.getElementById('bridge-status');
-    status.textContent = 'Saved for Team 22';
-    setTimeout(() => { status.textContent = ''; }, 2200);
-    showToast('Calibration notes saved');
-  }
-
-  function persistBridgeState() {
+  function persistBridgeState(statusMessage = 'Autosaved') {
     const notes = document.getElementById('bridge-notes').value.trim();
     if (notes) bridgeState.reality_notes = notes;
     else delete bridgeState.reality_notes;
     localStorage.setItem('riipen_bridge_state', JSON.stringify(bridgeState));
+    const status = document.getElementById('bridge-status');
+    status.textContent = statusMessage;
+    status.classList.remove('muted');
+  }
+
+  function resetBridgeFeedback() {
+    if (!confirm('Clear the quick calibration notes and start fresh?')) return;
+    delete bridgeState.workflow_fit;
+    delete bridgeState.biggest_gap;
+    delete bridgeState.reality_notes;
+    localStorage.removeItem('riipen_bridge_state');
+    document.querySelectorAll('#bridge-fit .mini-chip, #bridge-gap .mini-chip').forEach(chip => chip.classList.remove('selected'));
+    document.getElementById('bridge-notes').value = '';
+    const status = document.getElementById('bridge-status');
+    status.textContent = 'Ready for a fresh review';
+    status.classList.remove('muted');
+    showToast('Quick calibration reset');
   }
 
   function restoreBridgeFeedback() {
@@ -1232,29 +1233,34 @@ Do not invent team names or statistics not in the input.</pre>
   // Question toggle
   function toggleQ(item) {
     const noteArea = item.querySelector('.q-note-area');
-    const toggle = item.querySelector('.q-toggle');
     const isOpen = noteArea.classList.contains('open');
     noteArea.classList.toggle('open', !isOpen);
     item.classList.toggle('open', !isOpen);
   }
 
-  // Save note
-  function saveNote(e, btn) {
-    e.stopPropagation();
-    const noteArea = btn.closest('.q-note-area');
-    const input = noteArea.querySelector('.note-input');
+  function saveNoteValue(input, quiet = false) {
+    const noteArea = input.closest('.q-note-area');
     const display = noteArea.querySelector('.saved-note');
-    const qItem = btn.closest('.q-item');
+    const qItem = input.closest('.q-item');
     const qText = qItem.querySelector('.q-text').textContent.trim();
     const val = input.value.trim();
-    if (!val) return;
-    display.textContent = val;
-    display.classList.add('visible');
-    input.style.display = 'none';
-    btn.style.display = 'none';
     const key = 'riipen_note_' + btoa(qText.substring(0, 40));
-    localStorage.setItem(key, JSON.stringify({ q: qText, a: val }));
-    showToast('Note saved');
+    if (val) {
+      localStorage.setItem(key, JSON.stringify({ q: qText, a: val }));
+      display.textContent = 'Autosaved locally';
+      display.classList.add('visible');
+      if (!quiet) showToast('Note autosaved');
+    } else {
+      localStorage.removeItem(key);
+      display.textContent = '';
+      display.classList.remove('visible');
+    }
+  }
+
+  function saveNote(e, btn) {
+    e.stopPropagation();
+    const input = btn.closest('.q-note-area').querySelector('.note-input');
+    saveNoteValue(input, false);
   }
 
   // Load saved notes on page load
@@ -1268,13 +1274,31 @@ Do not invent team names or statistics not in the input.</pre>
         const noteArea = item.querySelector('.q-note-area');
         const input = noteArea.querySelector('.note-input');
         const display = noteArea.querySelector('.saved-note');
-        const btn = noteArea.querySelector('.save-note-btn');
-        display.textContent = a;
+        input.value = a;
+        display.textContent = 'Autosaved locally';
         display.classList.add('visible');
-        input.style.display = 'none';
-        btn.style.display = 'none';
       }
     });
+  }
+
+  function initNoteEditing() {
+    document.querySelectorAll('.q-note-area').forEach(area => {
+      area.addEventListener('click', event => event.stopPropagation());
+    });
+    document.querySelectorAll('.note-input').forEach(input => {
+      input.addEventListener('click', event => event.stopPropagation());
+      input.addEventListener('input', () => saveNoteValue(input, true));
+    });
+  }
+
+  function openFirstPrompt() {
+    const firstItem = document.querySelector('#tab-questions .q-item');
+    if (!firstItem) return;
+    const noteArea = firstItem.querySelector('.q-note-area');
+    if (!noteArea.classList.contains('open')) {
+      noteArea.classList.add('open');
+      firstItem.classList.add('open');
+    }
   }
 
   // Generate export
@@ -1289,7 +1313,7 @@ Do not invent team names or statistics not in the input.</pre>
     });
     const preview = document.getElementById('export-preview');
     if (notes.length === 0) {
-      preview.textContent = 'No notes saved yet. Go to the Meeting Questions tab and add notes during the call.';
+      preview.textContent = 'No notes saved yet. Open the feedback prompts tab and add notes as you review the workflow.';
     } else {
       preview.textContent = '=== RIIPEN MEETING NOTES — ' + new Date().toLocaleDateString() + ' ===\n\n' + notes.join('\n\n---\n\n');
     }
@@ -1315,16 +1339,14 @@ Do not invent team names or statistics not in the input.</pre>
       const noteArea = item.querySelector('.q-note-area');
       const input = noteArea.querySelector('.note-input');
       const display = noteArea.querySelector('.saved-note');
-      const btn = noteArea.querySelector('.save-note-btn');
       input.value = '';
-      input.style.display = '';
       display.textContent = '';
       display.classList.remove('visible');
-      btn.style.display = '';
       noteArea.classList.remove('open');
       item.classList.remove('open');
     });
-    document.getElementById('export-preview').textContent = 'No notes saved yet.';
+    document.getElementById('export-preview').textContent = 'No notes saved yet. Open the feedback prompts tab and add notes as you review the workflow.';
+    openFirstPrompt();
     showToast('Notes cleared');
   }
 
@@ -1336,8 +1358,11 @@ Do not invent team names or statistics not in the input.</pre>
     setTimeout(() => t.classList.remove('show'), 1800);
   }
 
+  document.getElementById('bridge-notes').addEventListener('input', () => persistBridgeState('Autosaved'));
   loadNotes();
+  initNoteEditing();
   restoreBridgeFeedback();
+  openFirstPrompt();
 </script>
 </body>
 </html>

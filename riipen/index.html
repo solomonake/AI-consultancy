@@ -349,23 +349,15 @@
   .mt-btn.no { background: var(--red-bg); border-color: #f0bbbb; color: var(--red); }
   .mt-btn.maybe { background: var(--amber-bg); border-color: #f0d090; color: var(--amber); }
 
-  /* ── SAVE BUTTON ── */
-  .q-footer { margin-top: 14px; display: flex; align-items: center; gap: 10px; }
-  .save-btn {
-    padding: 9px 20px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
+  /* ── AUTOSAVE STATUS ── */
+  .q-footer { margin-top: 12px; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+  .save-btn { display: none; }
+  .save-status {
+    font-size: 12px;
+    color: var(--ink-3);
+    min-height: 1em;
     font-weight: 600;
-    cursor: pointer;
-    font-family: var(--font);
-    transition: opacity .15s, transform .1s;
   }
-  .save-btn:hover { opacity: .9; }
-  .save-btn:active { transform: scale(.98); }
-  .save-status { font-size: 12px; color: var(--ink-3); }
   .save-status.ok { color: var(--green); }
 
   /* ── SUBMIT PANEL ── */
@@ -397,8 +389,13 @@
   .submit-btn:hover { opacity: .92; }
   .submit-btn:active { transform: scale(.98); }
   .submit-note { font-size: 12px; color: rgba(255,255,255,.4); margin-top: 12px; }
+  .submit-btn.secondary {
+    background: rgba(255,255,255,.08);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.15);
+  }
 
-  /* ── ISSUE PREVIEW ── */
+  /* ── REVIEW PANEL ── */
   .issue-preview {
     display: none;
     margin-top: 24px;
@@ -415,6 +412,12 @@
     white-space: pre-wrap;
     line-height: 1.7;
   }
+  .review-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
   .copy-issue-btn {
     margin-top: 12px;
     padding: 8px 16px;
@@ -427,6 +430,13 @@
     cursor: pointer;
     font-family: var(--font);
   }
+  .send-status {
+    margin-top: 14px;
+    font-size: 13px;
+    color: rgba(255,255,255,.7);
+  }
+  .send-status.ok { color: #9fe0bf; }
+  .send-status.error { color: #f1b7b7; }
 
   /* ── SECTION DIVIDER ── */
   .section-gap { margin-top: 56px; }
@@ -455,19 +465,19 @@
 
 <div class="hero">
   <div class="hero-badge">⚡ Team 22 × Riipen</div>
-  <h1>Jen, we need your brain — not just your data</h1>
-  <p>This is your input session. No right or wrong answers. Everything you share here directly shapes the prompts, thresholds, and workflow we build for you.</p>
+  <h1>Jen, this is the proposed workflow plus a short feedback session to tune it.</h1>
+  <p>Please review the demo, then answer these questions so we can refine the prompt library, threshold logic, and guardrails before we finalize anything for real use.</p>
   <div class="hero-meta">
     <div class="hero-chip">⏱ Takes about <span>10–15 minutes</span></div>
     <div class="hero-chip">💾 Auto-saves as you go</div>
-    <div class="hero-chip">📬 Sends to Team 22 on submit</div>
+    <div class="hero-chip">📬 Sends privately to Team 22 on submit</div>
   </div>
 </div>
 
 <div class="context-strip">
   <div class="context-copy">
     <div class="context-kicker">Workflow Calibration</div>
-    <p id="context-copy">If you already reviewed the workflow demo, any calibration notes you saved there will be bundled with this session when you submit.</p>
+    <p id="context-copy">If you already reviewed the workflow demo, any calibration notes you saved there will be bundled with this session when you submit your feedback.</p>
   </div>
   <div class="context-actions">
     <a class="context-link" href="/">Back to workflow demo</a>
@@ -481,6 +491,12 @@
 </div>
 
 <div class="main">
+
+  <div class="q-card" style="border-color:#dce4f3;background:linear-gradient(180deg,#fff 0%,#fbfcff 100%)">
+    <div class="q-num">How to use this page</div>
+    <div class="q-text">First, review the proposed workflow demo. Then use this page to tell us what feels accurate, what feels risky, and what would make the prompts genuinely useful in your real weekly process.</div>
+    <div class="q-why"><strong>What happens with your feedback:</strong> Everything auto-saves while you work. At the end, you can review a final summary before you send it privately to Team 22.</div>
+  </div>
 
   <!-- ══ SECTION 1: WORKFLOW REALITY ══ -->
   <div class="section-header">
@@ -861,19 +877,35 @@
 
   <!-- ══ SUBMIT ══ -->
   <div class="submit-panel">
-    <h2>All done? Send it to Team 22 🚀</h2>
-    <p>Your answers will open a pre-filled GitHub Issue that goes straight into our project repo. We'll process your input within 24 hours and update the prompt library based on what you shared.</p>
-    <button class="submit-btn" onclick="submitToGitHub()">
-      Open GitHub Issue with my answers →
+    <h2>Ready to send your feedback?</h2>
+    <p>When you're ready, we’ll prepare a final summary for review. Nothing is sent until you confirm the last step.</p>
+    <button class="submit-btn" onclick="prepareFeedbackReview()">
+      Review feedback before sending →
     </button>
-    <div class="submit-note">You'll be taken to GitHub to submit. Your saved answers here, plus any workflow calibration notes from the demo page, will be packaged into the issue for Team 22.</div>
+    <div class="submit-note">Your saved answers here, plus any workflow calibration notes from the demo page, will be packaged into one private submission for Team 22.</div>
     <div class="issue-preview" id="issue-preview">
       <pre id="issue-body-preview"></pre>
-      <button class="copy-issue-btn" onclick="copyIssueBody()">Copy issue text</button>
+      <div class="review-actions">
+        <button class="submit-btn secondary" onclick="scrollToTopForEdits()">Keep editing</button>
+        <button class="submit-btn" id="final-send-btn" onclick="submitFeedback()">Send feedback privately</button>
+        <button class="copy-issue-btn" onclick="copyIssueBody()">Copy feedback summary</button>
+      </div>
+      <div class="send-status" id="send-status"></div>
     </div>
   </div>
 
 </div>
+
+<form name="riipen-feedback" method="POST" netlify hidden>
+  <input type="hidden" name="form-name" value="riipen-feedback">
+  <input type="hidden" name="subject" value="Riipen workflow feedback">
+  <input type="hidden" name="source" value="">
+  <input type="hidden" name="workflow_fit" value="">
+  <input type="hidden" name="biggest_gap" value="">
+  <textarea name="workflow_review_notes"></textarea>
+  <textarea name="feedback_summary"></textarea>
+  <input type="hidden" name="page_url" value="">
+</form>
 
 <div id="toast"></div>
 
@@ -883,6 +915,7 @@ const state = JSON.parse(localStorage.getItem('jen_qa_state') || '{}');
 const bridgeState = JSON.parse(localStorage.getItem('riipen_bridge_state') || '{}');
 let totalAnswered = 0;
 const TOTAL_QS = 18;
+let latestFeedbackBody = '';
 
 // ── RESTORE STATE ON LOAD ──
 window.addEventListener('DOMContentLoaded', () => {
@@ -891,6 +924,7 @@ window.addEventListener('DOMContentLoaded', () => {
   updateProgress();
   initSliderLabels();
   initContextStrip();
+  initAutosave();
 });
 
 function initContextStrip() {
@@ -898,10 +932,22 @@ function initContextStrip() {
   const source = params.get('source');
   const copy = document.getElementById('context-copy');
   if (source === 'workflow-demo') {
-    copy.textContent = 'Thanks for reviewing the workflow demo first. Any quick calibration notes you saved there will be bundled with this session when you submit.';
+    copy.textContent = 'Thanks for reviewing the workflow demo first. Any quick calibration notes you saved there will be bundled with this feedback session when you submit.';
   } else if (bridgeState.workflow_fit || bridgeState.biggest_gap || bridgeState.reality_notes) {
-    copy.textContent = 'We found saved workflow calibration notes from the demo page. They will be bundled with this session when you submit to Team 22.';
+    copy.textContent = 'We found saved workflow calibration notes from the demo page. They will be bundled with this feedback session when you submit to Team 22.';
   }
+}
+
+function initAutosave() {
+  document.querySelectorAll('.save-status').forEach(status => {
+    status.textContent = 'Auto-saves while you type';
+  });
+  document.querySelectorAll('.q-textarea').forEach(textarea => {
+    textarea.addEventListener('input', () => persistCard(textarea.closest('.q-card'), 'Autosaved locally'));
+  });
+  document.querySelectorAll('input[type=range]').forEach(slider => {
+    slider.addEventListener('input', () => persistCard(slider.closest('.q-card'), 'Autosaved locally'));
+  });
 }
 
 function restoreState() {
@@ -971,7 +1017,7 @@ function selectChip(chip) {
     group.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
   }
   chip.classList.toggle('selected');
-  checkCardAnswered(chip.closest('.q-card'));
+  persistCard(chip.closest('.q-card'), 'Autosaved locally');
 }
 
 // ── SLIDERS ──
@@ -993,7 +1039,7 @@ function matrixToggle(btn, val) {
   const row = btn.closest('.matrix-row');
   row.querySelectorAll('.mt-btn').forEach(b => b.classList.remove('yes', 'maybe', 'no'));
   btn.classList.add(val);
-  checkCardAnswered(btn.closest('.q-card'));
+  persistCard(btn.closest('.q-card'), 'Autosaved locally');
 }
 
 // ── DRAG RANK ──
@@ -1004,7 +1050,7 @@ function initDragRank() {
 
   list.querySelectorAll('.rank-item').forEach(item => {
     item.addEventListener('dragstart', () => { dragging = item; item.style.opacity = '.4'; });
-    item.addEventListener('dragend', () => { item.style.opacity = ''; dragging = null; updateRankNumbers(); });
+    item.addEventListener('dragend', () => { item.style.opacity = ''; dragging = null; updateRankNumbers(); persistCard(item.closest('.q-card'), 'Ranking autosaved'); });
     item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
     item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
     item.addEventListener('drop', e => {
@@ -1016,6 +1062,7 @@ function initDragRank() {
         if (di < ti) list.insertBefore(dragging, item.nextSibling);
         else list.insertBefore(dragging, item);
         updateRankNumbers();
+        persistCard(list.closest('.q-card'), 'Ranking autosaved');
       }
     });
   });
@@ -1028,8 +1075,8 @@ function updateRankNumbers() {
 }
 
 // ── SAVE ──
-function saveQ(btn) {
-  const card = btn.closest('.q-card');
+function persistCard(card, statusMessage = 'Autosaved locally') {
+  if (!card) return;
   const status = card.querySelector('.save-status');
 
   // Collect all data-q elements in this card
@@ -1057,10 +1104,22 @@ function saveQ(btn) {
 
   localStorage.setItem('jen_qa_state', JSON.stringify(state));
   card.classList.add('answered');
-  status.textContent = '✓ Saved';
-  status.classList.add('ok');
-  setTimeout(() => { status.textContent = ''; status.classList.remove('ok'); }, 2500);
+  if (status) {
+    status.textContent = statusMessage;
+    status.classList.add('ok');
+  }
   updateProgress();
+}
+
+function saveQ(btn) {
+  const card = btn.closest('.q-card');
+  const status = card.querySelector('.save-status');
+  persistCard(card, 'Saved locally');
+  if (status) {
+    status.textContent = 'Saved locally';
+    status.classList.add('ok');
+    setTimeout(() => { status.textContent = ''; status.classList.remove('ok'); }, 2500);
+  }
   showToast('Answer saved');
 }
 
@@ -1088,20 +1147,67 @@ function updateProgress() {
 }
 
 // ── SUBMIT ──
-function submitToGitHub() {
-  const body = buildIssueBody();
-  document.getElementById('issue-body-preview').textContent = body;
+function prepareFeedbackReview() {
+  latestFeedbackBody = buildIssueBody();
+  document.getElementById('issue-body-preview').textContent = latestFeedbackBody;
   document.getElementById('issue-preview').classList.add('show');
+  document.getElementById('send-status').textContent = 'Review this summary first. Nothing is sent until you click the final button.';
+  document.getElementById('send-status').className = 'send-status';
+  document.getElementById('issue-preview').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
-  const title = encodeURIComponent('Jen Wallace — Discovery Input Session ' + new Date().toLocaleDateString());
-  const bodyEncoded = encodeURIComponent(body.substring(0, 5000)); // GitHub URL limit
-  const url = `https://github.com/solomonake/AI-consultancy/issues/new?title=${title}&body=${bodyEncoded}&labels=jen-input,riipen`;
-  window.open(url, '_blank');
-  showToast('Opening GitHub — just click Submit!');
+function scrollToTopForEdits() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function submitFeedback() {
+  if (!latestFeedbackBody) {
+    prepareFeedbackReview();
+    return;
+  }
+
+  const finalSendBtn = document.getElementById('final-send-btn');
+  const sendStatus = document.getElementById('send-status');
+  finalSendBtn.disabled = true;
+  finalSendBtn.textContent = 'Sending...';
+  sendStatus.textContent = 'Submitting your feedback privately...';
+  sendStatus.className = 'send-status';
+
+  const params = new URLSearchParams(window.location.search);
+  const source = params.get('source') || 'direct';
+  const payload = new URLSearchParams({
+    'form-name': 'riipen-feedback',
+    subject: `Riipen workflow feedback — ${new Date().toLocaleDateString()}`,
+    source,
+    workflow_fit: bridgeState.workflow_fit || '',
+    biggest_gap: bridgeState.biggest_gap || '',
+    workflow_review_notes: bridgeState.reality_notes || '',
+    feedback_summary: latestFeedbackBody,
+    page_url: window.location.href
+  });
+
+  try {
+    const response = await fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: payload.toString()
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    sendStatus.textContent = 'Feedback sent. Team 22 has it, and your local autosaved copy is still here if you need it.';
+    sendStatus.className = 'send-status ok';
+    finalSendBtn.textContent = 'Sent';
+    showToast('Feedback sent');
+  } catch (error) {
+    finalSendBtn.disabled = false;
+    finalSendBtn.textContent = 'Send feedback privately';
+    sendStatus.textContent = 'We could not send the feedback right now. Your answers are still saved locally, so you can try again.';
+    sendStatus.className = 'send-status error';
+    showToast('Send failed');
+  }
 }
 
 function buildIssueBody() {
-  const lines = ['# Jen Wallace — Discovery Input\n', `**Submitted:** ${new Date().toLocaleString()}\n`, '---\n'];
+  const lines = ['# Riipen workflow feedback — Jen Wallace\n', `**Submitted:** ${new Date().toLocaleString()}\n`, '---\n'];
 
   const bridgeEntries = [];
   if (bridgeState.workflow_fit) bridgeEntries.push(`- **Workflow fit:** ${bridgeState.workflow_fit}`);
@@ -1180,7 +1286,7 @@ function buildIssueBody() {
 
 function copyIssueBody() {
   navigator.clipboard.writeText(document.getElementById('issue-body-preview').textContent)
-    .then(() => showToast('Issue text copied'));
+    .then(() => showToast('Feedback summary copied'));
 }
 
 // ── TOAST ──
